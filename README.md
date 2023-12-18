@@ -22,5 +22,5 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 To learn more about permissionless, take a look at the following resources:
 
-- [permissionless Documentation](https://docs.pimlico.io/permissionless) - start now and send trasnsaction via smart accounts
+- [permissionless](https://docs.pimlico.io/permissionless) Documentation - start now and send trasnsaction via smart accounts
 - [web3auth](https://nextjs.org/learn) - Web3Auth is a simple, non-custodial auth infrastructure that enables Web3 wallets and applications to provide seamless user logins.
