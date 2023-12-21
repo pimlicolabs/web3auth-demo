@@ -1,8 +1,8 @@
+import { Loader } from "@/components/loader"
 import { SmartAccountClient } from "permissionless"
 import { SmartAccount } from "permissionless/accounts"
-import { Chain, Hash, Transport, zeroAddress } from "viem"
-import { Loader } from "@/components/loader"
 import { useState } from "react"
+import { Chain, Hash, Transport, zeroAddress } from "viem"
 
 export const DemoTransactionButton = ({
     smartAccountClient,
@@ -35,5 +35,4 @@ export const DemoTransactionButton = ({
             </button>
         </div>
     )
-    _
 }
