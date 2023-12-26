@@ -7,8 +7,7 @@ import { usePublicClient } from "wagmi"
 import { Loader } from "@/components/loader"
 import { SmartAccount, signerToSafeSmartAccount } from "permissionless/accounts"
 import { Address, Chain, Hash, Transport, http } from "viem"
-import { CustomSigner } from "./customSigner"
-import { SmartAccountClient, createSmartAccountClient } from "permissionless"
+import { SmartAccountClient, createSmartAccountClient, walletClientToCustomSigner } from "permissionless"
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico"
 import { DemoTransactionButton } from "@/components/demo-transaction"
 
@@ -69,7 +68,7 @@ export const Web3AuthFlow = () => {
     useEffect(() => {
         ;(async () => {
             if (isConnected && walletClient && publicClient) {
-                const customSigner = new CustomSigner(walletClient)
+                const customSigner = walletClientToCustomSigner(walletClient)
 
                 const safeSmartAccountClient = await signerToSafeSmartAccount(
                     publicClient,
