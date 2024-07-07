@@ -1,48 +1,45 @@
 "use client"
 import { Web3Auth } from "@web3auth/modal"
+import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
+
 import { Web3AuthConnector } from "@web3auth/web3auth-wagmi-connector"
 import { useCallback, useEffect, useState } from "react"
-import { sepolia, useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi"
+import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi"
 import { usePublicClient } from "wagmi"
 import { Loader } from "@/components/loader"
 import { SmartAccount, signerToSafeSmartAccount } from "permissionless/accounts"
 import { Address, Chain, Hash, Transport, http } from "viem"
-import { SmartAccountClient, createSmartAccountClient, walletClientToCustomSigner } from "permissionless"
-import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico"
+import { ENTRYPOINT_ADDRESS_V06, SmartAccountClient, createSmartAccountClient, walletClientToSmartAccountSigner } from "permissionless"
+import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from "permissionless/clients/pimlico"
 import { DemoTransactionButton } from "@/components/demo-transaction"
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { ENTRYPOINT_ADDRESS_V06_TYPE } from "permissionless/types";
+import { sepolia } from "viem/chains";
+import Web3AuthConnectorInstance from "./web3AuthInstance";
 
 if (!process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID)
     throw new Error("Missing NEXT_PUBLIC_WEB3AUTH_CLIENT_ID")
 
-const web3authInstance = new Web3Auth({
-    clientId: process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID,
-    web3AuthNetwork: "sapphire_devnet", // Web3Auth Network
-    chainConfig: {
-        chainNamespace: "eip155",
-        chainId: "0xAA36A7",
-        rpcTarget: process.env.NEXT_PUBLIC_RPC_URL!,
-        displayName: "Ethereum sepolia",
-        blockExplorer: "https://sepolia.etherscan.io",
-        ticker: "ETH",
-        tickerName: "Ethereum"
-    }
-})
+if (!process.env.NEXT_PUBLIC_PIMLICO_API_KEY)
+    throw new Error("Missing NEXT_PUBLIC_PIMLICO_API_KEY")
+
+const pimlicoRpcUrl = `https://api.pimlico.io/v2/11155111/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
 
 const pimlicoPaymaster = createPimlicoPaymasterClient({
-    transport: http(process.env.NEXT_PUBLIC_PIMLICO_PAYMASTER_RPC_HOST!)
+    transport: http(pimlicoRpcUrl),
+    entryPoint: ENTRYPOINT_ADDRESS_V06
 })
 
-const connector = new Web3AuthConnector({
-    options: {
-        web3AuthInstance: web3authInstance
-    }
+const bundlerClient = createPimlicoBundlerClient({
+    transport: http(pimlicoRpcUrl),
+    entryPoint: ENTRYPOINT_ADDRESS_V06,
 })
 
 export const Web3AuthFlow = () => {
     const { isConnected } = useAccount()
     const [showLoader, setShowLoader] = useState<boolean>(false)
     const [smartAccountClient, setSmartAccountClient] =
-        useState<SmartAccountClient<Transport, Chain, SmartAccount> | null>(
+        useState<SmartAccountClient<ENTRYPOINT_ADDRESS_V06_TYPE> | null>(
             null
         )
     const publicClient = usePublicClient()
@@ -50,13 +47,13 @@ export const Web3AuthFlow = () => {
     const [txHash, setTxHash] = useState<string | null>(null)
     const { disconnect } = useDisconnect()
 
-    const { connect } = useConnect({
-        connector: connector
-    })
+    const { connect } = useConnect()
+    
+    const connector = Web3AuthConnectorInstance([sepolia])
 
     const signIn = useCallback(async () => {
         setShowLoader(true)
-        connect()
+        connect({ connector })
     }, [connect])
 
     const signOut = useCallback(async () => {
@@ -68,13 +65,12 @@ export const Web3AuthFlow = () => {
     useEffect(() => {
         ;(async () => {
             if (isConnected && walletClient && publicClient) {
-                const customSigner = walletClientToCustomSigner(walletClient)
+                const customSigner = walletClientToSmartAccountSigner(walletClient)
 
                 const safeSmartAccountClient = await signerToSafeSmartAccount(
                     publicClient,
                     {
-                        entryPoint: process.env
-                            .NEXT_PUBLIC_ENTRYPOINT! as Address,
+                        entryPoint: ENTRYPOINT_ADDRESS_V06,
                         signer: customSigner,
                         safeVersion: "1.4.1",
                         saltNonce: BigInt(0)
@@ -83,9 +79,15 @@ export const Web3AuthFlow = () => {
 
                 const smartAccountClient = createSmartAccountClient({
                     account: safeSmartAccountClient,
+                    entryPoint: ENTRYPOINT_ADDRESS_V06,
                     chain: sepolia,
-                    transport: http(process.env.NEXT_PUBLIC_BUNDLER_RPC_HOST!),
-                    sponsorUserOperation: pimlicoPaymaster.sponsorUserOperation
+                    bundlerTransport: http(pimlicoRpcUrl, {
+                        timeout: 30_000
+                    }),
+                    middleware: {
+                        gasPrice: async () => (await bundlerClient.getUserOperationGasPrice()).fast,
+                        sponsorUserOperation: pimlicoPaymaster.sponsorUserOperation,
+                    },
                 })
 
                 setSmartAccountClient(smartAccountClient)
