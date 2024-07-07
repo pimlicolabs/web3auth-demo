@@ -17,6 +17,7 @@ export const DemoTransactionButton = ({
     const sendTransaction = async () => {
         setLoading(true)
         const txHash = await smartAccountClient.sendTransaction({
+            // @ts-ignore
             account: smartAccountClient.account,
             to: zeroAddress,
             data: "0x",
