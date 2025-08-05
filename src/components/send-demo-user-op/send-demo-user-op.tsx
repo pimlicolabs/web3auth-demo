@@ -24,7 +24,7 @@ export const SendDemoUserOp = () => {
     }
 
     return (
-        <div>
+        <div className="flex flex-col items-center space-y-4">
             <button
                 onClick={handleSendTransaction}
                 disabled={isPending}
@@ -33,10 +33,29 @@ export const SendDemoUserOp = () => {
                 {!isPending && "Send userOp"}
                 {isPending && <Loader />}
             </button>
-            {hash && <div>Transaction Hash: {hash}</div>}
-            {isConfirming && "Waiting for confirmation..."}
-            {isConfirmed && "Transaction confirmed."}
-            {error && <div>Error: {error.message}</div>}
+            {hash && (
+                <div className="text-center space-y-2">
+                    <div className="text-sm text-gray-600">
+                        Transaction Hash: 
+                        <div className="font-mono text-xs break-all mt-1">{hash}</div>
+                    </div>
+                    {isConfirming && (
+                        <div className="text-sm text-yellow-600">
+                            Waiting for confirmation...
+                        </div>
+                    )}
+                    {isConfirmed && (
+                        <div className="text-sm text-green-600 font-semibold">
+                            ✓ Transaction confirmed
+                        </div>
+                    )}
+                </div>
+            )}
+            {error && (
+                <div className="text-sm text-red-600">
+                    Error: {error.message}
+                </div>
+            )}
         </div>
     )
 }
