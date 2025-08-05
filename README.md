@@ -1,3 +1,6 @@
+> ![WARNING]
+> This example uses outdated and deprecated packages. As of web3Auth v10, the `@web3auth/modal` has strong Smart Account and AA support builtin, to see a updated example demo of web3Auth and Pimlico, checkout the docs at https://docs.pimlico.io/guides/how-to/signers/web3auth#use-with-permissionlessjs
+
 This is a demo of how to use [web3auth](https://web3auth.io/) as signer and create a safe smart account using [permissionless](https://github.com/pimlicolabs/permissionless.js)
 
 ## Installation
