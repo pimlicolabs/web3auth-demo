@@ -22,5 +22,5 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 To learn more about Pimlico, take a look at the following resources:
 
-- [pimlico](https://docs.pimlico.io) Documentation - start now and relay transactions via smart accounts
+- [pimlico](https://docs.pimlico.io) - Start now and relay transactions via smart accounts
 - [web3auth](https://nextjs.org/learn) - Web3Auth is a simple, non-custodial auth infrastructure that enables Web3 wallets and applications to provide seamless user logins.
